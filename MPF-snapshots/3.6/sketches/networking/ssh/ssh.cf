@@ -1,0 +1,199 @@
+#!/var/cfengine/bin/cf-agent -KIf
+#
+# Author: Diego Zamboni <diego.zamboni@cfengine.com>
+# OS: linux, darwin
+# Tested: darwin
+#
+# Install and configure sshd
+# 1. Install sshd daemon
+# 2. Set configuration parameters
+# 3. Ensure daemon is running
+#
+# Sample usage:
+#
+#
+# body common control
+# {
+#       inputs => { "cfengine_stdlib.cf", "wordpress_installer.cf" };
+#       bundlesequence =>
+#       { 
+#         # Install and configure sshd (not yet implemented)
+#         sshd_install("g.sshd_config"),
+#         # Only configure sshd
+#         sshd_config("g.sshd_config"),
+#         # Configure ssh (client-side configuration) (not yet implemented)
+#         ssh_config("g.ssh_config")
+#       };
+# }
+#
+# bundle common g
+# {
+#   vars:
+#       # SSHD configuration to set
+#       "sshd_config[Protocol]"           string => "2";
+#       "sshd_config[X11Forwarding]"      string => "yes";
+#       "sshd_config[UseDNS]"		string => "no";
+#
+#       # SSH configuration to set, per host
+#       "ssh_config[host1][ForwardX11]"   string => "yes";
+#       "ssh_config[host1][ForwardAgent]" string => "yes";
+#       "ssh_config[host2][Port]"         string => "2222";
+#       "ssh_config[*][Port]"             string => "2022";
+# }
+#
+# Any parameters in sshd_config are entered into the sshd configuration
+# file (normally /etc/ssh/sshd_config or /etc/sshd_config, depending
+# on the operating system). Any parameters in ssh_config are entered into
+# the ssh configuration file (normally /etc/ssh/ssh_config or /etc/ssh_config).
+
+######################################################################
+# Public entry points
+######################################################################
+
+# Configure sshd, according to the parameters given in the "params" argument.
+# All parameters that do not start with an underscore (_) will be edited/added
+# to the sshd configuration file.
+# The file to edit is determined automatically, but you can manually override it
+# by specifying the parameter _sshd_config_file in the params array.
+
+body file control
+{
+      namespace => "cfdc_sshd";
+}
+
+bundle agent sshd(runenv, metadata, params)
+{
+  methods:
+      "vars" usebundle => vars("$(params)");
+      "sshd_cfg"  usebundle => set_cfg("cfdc_sshd:vars.conf");
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    verbose::
+      "$(this.bundle): running in verbose mode";
+    test::
+      "$(this.bundle): running in test mode";
+}
+
+bundle agent sshd_config(params)
+{
+  methods:
+      "vars" usebundle => cfdc_sshd:vars("$(params)"),
+      handle => "sshd_set_variables";
+      "sshd_cfg"  usebundle => cfdc_sshd:set_cfg("cfdc_sshd:vars.conf"),
+      handle => "sshd_set_configuration",
+      comment => "Apply the ssh parameters";
+}
+
+######################################################################
+
+bundle agent vars(params)
+{
+  classes:
+    test::
+      "SSH_TEST_MODE" expression => "any";
+
+  vars:
+      # Default value, for most OSs
+      "conf[_sshd_config_file]" string => "/etc/ssh/sshd_config",
+      policy => "free";
+      "conf[_sshd_start_cmd]"   string => "/etc/init.d/sshd start",
+      policy => "free";
+      "conf[_sshd_stop_cmd]"    string => "/etc/init.d/sshd restart",
+      policy => "free";
+      "conf[_sshd_restart_cmd]" string => "/etc/init.d/sshd reload",
+      policy => "free";
+      "conf[_create]" string => "false",
+      policy => "free";
+
+    debian::
+      # OS-specific values that differ from the default
+      "conf[_sshd_config_file]" string => "/etc/ssh/sshd_config",
+      policy => "free";
+      "conf[_sshd_start_cmd]"   string => "/usr/sbin/service ssh start",
+      policy => "free";
+      "conf[_sshd_stop_cmd]"    string => "/usr/sbin/service ssh restart",
+      policy => "free";
+      "conf[_sshd_restart_cmd]" string => "/usr/sbin/service ssh reload",
+      policy => "free";
+
+      # OS-specific values that differ from the default
+    darwin:: # Macs
+      "conf[_sshd_config_file]" string => "/etc/sshd_config",
+      policy => "free";
+      "conf[_sshd_start_cmd]"   string => "/usr/sbin/systemsetup -setremotelogin on",
+      policy => "free";
+      "conf[_sshd_stop_cmd]"    string => "/usr/sbin/systemsetup -f -setremotelogin off",
+      policy => "free";
+      "conf[_sshd_restart_cmd]" string => "",
+      policy => "free";
+    hpux::
+      "conf[_sshd_config_file]" string => "/opt/ssh/etc/sshd_config",
+      policy => "free";
+      "conf[_sshd_start_cmd]"   string => "/sbin/init.d/secsh start",
+      policy => "free";
+      "conf[_sshd_stop_cmd]"    string => "/sbin/init.d/secsh stop",
+      policy => "free";
+      "conf[_sshd_restart_cmd]" string => "",
+      policy => "free";
+      # These should be last, to override any OS-specific settings
+    SSH_TEST_MODE::
+      "conf[_sshd_config_file]" string => "/tmp/sshd_config",
+      policy => "free";
+      "conf[_sshd_start_cmd]"   string => "/bin/echo --- I would now start sshd",
+      policy => "free";
+      "conf[_sshd_stop_cmd]"    string => "/bin/echo --- I would now stop sshd",
+      policy => "free";
+      "conf[_sshd_restart_cmd]" string => "/bin/echo --- I would now restart sshd",
+      policy => "free";
+      "conf[_create]" string => "true",
+      policy => "free";
+    SSH_TEST_MODE_NORESTART::
+      # Testing the case when no restart command is given
+      "conf[_sshd_restart_cmd]" string => "",
+      policy => "free";
+    any::
+      # Copy configuration parameters passed, into a local array
+      "param_keys"          slist  => getindices("$(params)");
+      "conf[$(param_keys)]" string => "$($(params)[$(param_keys)])",
+      policy => "free";
+}
+
+bundle agent set_cfg(params)
+{
+  files:
+      "$($(params)[_sshd_config_file])"
+      handle => "sshd_edit_configfile",
+      comment => "Set desired sshd_config parameters",
+      edit_line => default:set_config_values_matching("$(params)", "[^_].*"),
+      create => "$($(params)[_create])",
+      classes => default:if_repaired("restart_sshd");
+
+  commands:
+    restart_sshd.!no_restarts.!use_restart_cmd::
+      "$($(params)[_sshd_stop_cmd]) && $($(params)[_sshd_start_cmd])"
+      handle => "sshd_stop_and_start",
+      comment => "Stop and restart sshd if the configuration file was modified",
+      contain => default:in_shell;
+    restart_sshd.!no_restarts.use_restart_cmd::
+      "$($(params)[_sshd_restart_cmd])"
+      handle => "sshd_restart",
+      comment => "Restart sshd if the configuration file was modified",
+      contain => default:in_shell;
+}

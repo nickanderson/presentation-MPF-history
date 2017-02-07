@@ -1,0 +1,37 @@
+{
+    manifest:
+    {
+        "main.cf": { description: "main file" },
+        "README.md": { documentation: true },
+        "params/pcidss_v2.json": { description: "PCI parameters" },
+    },
+
+    metadata:
+    {
+        name: "Security::file_integrity",
+        description: "File hashes will be generated at intervals specified by ifelapsed. Reports on changes will be part of the FileChanges report table (CFEngine Enterprise only), or agent output in community. Hashing files requires a lot of disk and CPU cycles, so you should be careful when selecting the amount of files to check and the interval at which it happens (ifelapsed).",
+        version: 1.00,
+        license: "MIT",
+        tags: [ "cfdc", "pcidss", "pcidss_v2", "pcidss_v2_sec_11_5", "enterprise_compatible", "enterprise_3_6" ],
+        depends: { "CFEngine::sketch_template": {}, cfengine: {version: "3.6.0"}, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] },
+        authors: [ "Eystein Stenberg <eystein@cfengine.com>" ],
+    },
+
+    api:
+    {
+        // the key is the name of the bundle!
+        watch:
+        [
+            { type: "environment", name: "runenv" },
+            { type: "metadata", name: "metadata" },
+            { type: "list", name: "watch", description: "Absolute path to files or directories to watch", validation: "LIST_OF_PATH_ABSOLUTE_UNIX_OR_WINDOWS", example: "/etc or /etc/passwd" },
+            { type: "string", name: "hash_algorithm", default: "sha256", description: "Hash algorithm", choice: [ "md5", "sha1", "sha224", "sha256", "sha384", "sha512", "best" ], },
+            { type: "string", name: "ifelapsed", default: "1440", description: "Time in minutes that should elapse before recheck", validation: "IFELAPSED", example: "1440" },
+            { type: "return", name: "paths", },
+        ],
+    },
+
+    namespace: "cfdc_file_integrity",
+    
+    interface: [ "main.cf" ],
+}

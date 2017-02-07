@@ -1,0 +1,63 @@
+body file control
+{
+      namespace => "cfdc_ipverify";
+}
+
+bundle agent maybe_usebundle(runenv, metadata, ip, maclist, usebundle, arp_command)
+{
+  classes:
+      "$(vars)" expression => "default:runenv_$(runenv)_$(vars)";
+      "not_$(vars)" expression => "!default:runenv_$(runenv)_$(vars)";
+
+  vars:
+      "vars" slist => { "@(default:$(runenv).env_vars)" };
+      "$(vars)" string => "$(default:$(runenv).$(vars))";
+
+      "pinger" string => "$(default:eu.exec_prefix)$(default:paths.path[ping])";
+      "ping_options" string => "-q -c 1";
+
+    linux::
+      "ip_mac_detected"
+      string     => execresult("$(arp_command) $(ip)", "useshell"),
+      ifvarclass => "can_ping_ip",
+      comment    => "If we can ping the ip, get the arp entry";
+
+  classes:
+    linux::
+      "can_ping_ip"      expression => returnszero("$(pinger) $(ping_options) $(ip) > /dev/null 2>&1", "useshell");
+      "ip_has_known_mac" expression => regcmp(".*\s$(maclist)\s.*", "$(ip_mac_detected)");
+
+  methods:
+      "utils" usebundle => default:eu($(runenv));
+
+    verbose::
+      "metadata" usebundle => default:report_metadata($(this.bundle), $(metadata)),
+      inherit => "true";
+
+    linux::
+      "exec_bundle" usebundle => $(usebundle),
+      ifvarclass => "can_ping_ip.ip_has_known_mac",
+      comment    => "Call requested bundle";
+
+  reports:
+    verbose::
+      "$(this.bundle): imported environment '$(runenv)' var '$(vars)' with value '$($(vars))'";
+      "$(this.bundle): imported environment '$(runenv)' class '$(vars)' because 'default:runenv_$(runenv)_$(vars)' was defined"
+      ifvarclass => "$(vars)";
+
+    verbose::
+      "$(this.bundle): param_usebundle: $(usebundle)";
+      "$(this.bundle): param_ip: $(ip)";
+      "$(this.bundle): param_mac: $(maclist)";
+    verbose.can_ping_ip.ip_has_known_mac::
+      "$(this.bundle): calling $(usebundle) because $(ip) has known mac $(ip_mac_detected)";
+    verbose.!can_ping_ip::
+      "$(this.bundle): IP $(ip) can't be reached";
+
+    can_ping_ip.ip_has_known_mac::
+      "1" bundle_return_value_index => "match";
+
+    !(can_ping_ip.ip_has_known_mac)::
+      "" bundle_return_value_index => "match";
+
+}

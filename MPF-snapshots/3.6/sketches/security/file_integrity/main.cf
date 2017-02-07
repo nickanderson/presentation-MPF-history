@@ -1,0 +1,37 @@
+body file control
+{
+      namespace => "cfdc_file_integrity";
+}
+
+bundle agent watch(runenv, metadata, given_watch, hash_algorithm, ifelapsed)
+{
+#@include "REPO/sketch_template/standard.inc"
+
+  vars:
+    dc_test::
+      "watch" slist => { "/tmp" }, policy => "free";
+    not_test::
+      "watch" slist => { @(given_watch) }, policy => "free";
+
+    any::
+      "watch_str" string => join(";", watch), policy => "free";
+
+  files:
+      "$(watch)"
+      comment      => "Detect changes to files",
+      changes      => changes_file_integrity($(hash_algorithm)),
+      depth_search => default:recurse("inf"),
+      action       => default:if_elapsed($(ifelapsed));
+
+  reports:
+    any::
+      "$(watch_str)" bundle_return_value_index => "paths";
+}
+
+body changes changes_file_integrity(hash_algorithm)
+{
+      hash           => $(hash_algorithm);
+      report_changes => "content";
+      update_hashes  => "yes";
+      report_diffs   => "false";
+}

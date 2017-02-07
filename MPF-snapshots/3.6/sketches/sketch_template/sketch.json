@@ -1,0 +1,46 @@
+{
+    manifest:
+    {
+        "zmain.cf": { description: "main file" },
+        "standard.inc": { description: "standard DC include template", version: 1 },
+        "README.md": { documentation: true },
+        "params/demo.json": { description: "simple demo of sketch" },
+        "scripts/sample.sh": { perm: 755, description: "Sample script bundled with the sketch" },
+        "modules/mymodule": { module: true, perm: 755, description: "Sample module bundled with the sketch" }
+    },
+
+    metadata:
+    {
+        name: "CFEngine::sketch_template",
+	    description: "Standard template for Design Center sketches",
+        version: "2.00",
+        license: "MIT",
+        tags: [ "cfdc", "enterprise_compatible", "enterprise_3_6" ],
+        authors: [ "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { cfengine: { version: "3.6.0" }, os: [{ any: "Any OS" }] }
+    },
+
+    api:
+    {
+        // this is the name of the bundle!
+        entry:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "prefix", default: "__PREFIX__" },
+
+            { type: "boolean", name: "myboolean", default: "1" }, //  true is OK too
+            { type: "string", name: "mytype", default: "fallback" },
+            { type: "string", name: "myip", description: "This is my IP address or whatever" },
+            { type: "list", name: "mylist", },
+            { type: "array", name: "myarray", },
+            // you can have any number of return variables
+            { type: "return", name: "myreturn" },
+            { type: "return", name: "myreturn2" },
+        ],
+    },
+
+    namespace: "cfdc_sketch_template",
+    
+    interface: [],
+}

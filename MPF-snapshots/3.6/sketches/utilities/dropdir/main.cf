@@ -1,0 +1,87 @@
+bundle agent dropdir_run(runenv, metadata, context, directory, days)
+{
+#@include "REPO/sketch_template/standard.inc"
+  vars:
+      "a2string" string => format("%s %s %s", $(context), $(directory), $(days));
+      "activation_id" string => hash($(a2string), "sha1");
+
+      "scripts" slist => lsdir($(directory), "...+", "true");
+
+  methods:
+      "cleanit" usebundle => dropdir_cleanit($(scripts),
+                                             $(days),
+                                             $(activation_id)),
+      inherit => "true";
+
+      "report run" usebundle => dropdir_report($(scripts),
+                                               $(context),
+                                               $(activation_id),
+                                               "$(scripts) $(activation_id)"),
+      inherit => "true";
+
+  reports:
+    dc_verbose::
+      "$(dcbundle): The unique ID is $(activation_id)";
+}
+
+bundle agent dropdir_cleanit(script, days, id)
+{
+  classes:
+      "cleanit" expression => isgreaterthan($(ago), $(age));
+      "recent" not => isgreaterthan($(ago), $(age));
+
+  vars:
+      "pc" string => canonify($(pname));
+      "age" string => filestat($(script), 'ctime');
+      "ago" int => ago(0, 0, $(days), 0, 0, 0);
+
+  files:
+    cleanit.!dc_test::
+      "$(script)"
+      delete => default:tidy,
+      classes => default:if_ok("$(pc)_cleaned");
+
+  reports:
+    dc_verbose::
+      "$(dcbundle): $(script) age = $(age), limit = $(ago)";
+      "$(dcbundle): $(script) is older than $(days) days, cleaning..." ifvarclass => "cleanit";
+      "$(dcbundle): $(script) is newer than $(days) days, leaving it" ifvarclass => "recent";
+      "$(dcbundle): $(script) was cleaned" ifvarclass => "$(pc)_cleaned";
+
+    cleanit.dc_test::
+      "$(dcbundle): in test mode, simulating that $(script) was cleaned"
+      handle => "$(id)_script_simulate_clean";
+}
+
+bundle agent dropdir_report(cmd, context, id, pname)
+{
+  classes:
+      "runit" and => { fileexists($(cmd)), $(context) };
+
+  vars:
+      "pc" string => canonify($(pname));
+      "canon_cmd" string => canonify($(cmd));
+
+    runit::
+      "out[$(canon_cmd)]"
+      string => execresult($(cmd), "noshell"),
+      comment => "Run and collect the output of the given command iff the context is true.";
+
+      "out_list[$(canon_cmd)]"
+      slist => splitstring("$(out[$(canon_cmd)])","[\n]", 99999),
+      comment => "Collect the output of the given command into a slist.";
+
+  reports:
+    dc_verbose::
+      "$(dcbundle): WE HAVE the required context '$(context)'"
+      ifvarclass => "$(context)";
+
+      "$(dcbundle): WE LACK the required context '$(context)'"
+      ifvarclass => "!($(context))";
+
+      "$(dcbundle): The command $(cmd) ran and collected output '$(out[$(canon_cmd)])'"
+      ifvarclass => "runit";
+
+      "$(dcbundle): The command $(cmd) doesn't exist or won't run in context '$(context)'"
+      ifvarclass => "!runit";
+}

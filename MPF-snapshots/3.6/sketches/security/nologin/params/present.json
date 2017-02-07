@@ -1,0 +1,7 @@
+{
+    "Security::nologin":
+    {
+        "content" : "This machine is managed by CFEngine, no direct logins allowed.",
+        "state" : "present"
+    }
+}

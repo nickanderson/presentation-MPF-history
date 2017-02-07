@@ -1,0 +1,111 @@
+body file control
+{
+      namespace => "cfdc_security_nologin";
+}
+
+bundle agent localuser_nologin(runenv, metadata, list_of_users)
+{
+#@include "REPO/sketch_template/standard.inc"
+
+  vars:
+      "nologin_bin" string => "$(exec_prefix)$(default:paths.path[nologin])";
+
+  classes:
+      "state_nologin"
+      expression => strcmp( $(state), "nologin" ),
+      scope => "namespace";
+
+      "have_nologin"
+      or => { "dc_test", isexecutable("$(nologin_bin)") };
+
+      "have_$(list_of_users)" expression => userexists("$(list_of_users)");
+
+  commands:
+    !have_nologin::
+      "$(default:paths.path[false])"
+      handle => "nologin_bad_parameter",
+      comment => "Unexpected parameter, trigger a promise failed.";
+
+  users:
+    have_nologin::
+      "$(list_of_users)"
+      policy => "present",
+      shell => "$(nologin_bin)",
+      ifvarclass => "have_$(list_of_users)";
+
+  reports:
+    !have_nologin::
+      "$(dcbundle): ERROR -- I don't know where the nologin shell is, please see bundle common paths in the stdlib";
+
+    dc_verbose::
+      "$(dcbundle): DEBUG -- nologin_bin = $(nologin_bin)";
+}
+
+
+bundle agent etc_nologin(runenv, metadata, state, content)
+{
+#@include "REPO/sketch_template/standard.inc"
+
+  vars:
+      "etc_nologin" string => "$(path_prefix)/etc/nologin";
+      "valid_states" slist => { "present", "absent" }; # Same as choices in the sketch.metadata file. Its good to verify everywhere! Expect bad params!
+
+  classes:
+      "present"
+      expression => strcmp( $(state), "present" );
+
+      "absent"
+      expression => strcmp( $(state), "absent" );
+
+  commands:
+    !(present|absent)::
+      "$(default:paths.path[false])"
+      handle => "nologin_bad_parameter_not_present_or_absent",
+      comment => "Unexpected parameter, trigger a promise failed.";
+
+  methods:
+    present|absent::
+      "_etc_nologin state"
+      usebundle => etc_nologin_state($(etc_nologin), $(content)),
+      inherit => "true",
+      handle => "nologin_methods_etc_nologin_state";
+
+  reports:
+    !(present|absent)::
+      "$(dcbundle): ERROR invalid state given, only present or absent allowed given $(state)";
+}
+
+bundle agent etc_nologin_state(etc_nologin, content)
+{
+  files:
+    present::
+      "$(etc_nologin)"
+      create => "true",
+      edit_defaults => default:empty,
+      handle => "nologin_state_files_present",
+      classes => default:scoped_classes_generic("bundle", "nologin_create"),
+      edit_line => default:append_if_no_line($(content));
+
+    absent::
+      "$(etc_nologin)"
+      handle => "nologin_state_files_absent",
+      classes => default:scoped_classes_generic("bundle", "nologin_remove"),
+      delete => default:tidy;
+
+  reports:
+    dc_verbose::
+      "content = $(content)";
+      "/etc/nologin = $(etc_nologin)";
+
+    dc_verbose.nologin_create_ok::
+      "$(etc_nologin) was created";
+
+    present.!nologin_create_ok::
+      "$(etc_nologin) was NOT created";
+
+    dc_verbose.nologin_remove_ok::
+      "$(etc_nologin) was removed";
+
+    absent.!nologin_remove_ok::
+      "$(etc_nologin) was NOT removed";
+}

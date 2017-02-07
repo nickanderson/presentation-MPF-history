@@ -1,0 +1,3 @@
+author: Neil H Watson <neil@watson-wilson.ca>
+ostype: linux solaris aix
+tested: debian_6.x86_64

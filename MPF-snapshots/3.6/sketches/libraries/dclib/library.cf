@@ -1,0 +1,35 @@
+# an example of how a sketch can install itself
+# "install" usebundle => default:install_sketch(METADATA, "sourcedir", "destdir");
+# TODO: add permissions and owner/group
+bundle agent install_sketch(metadata, source_dir, dest_dir)
+{
+  vars:
+      "files" slist => { "@($(metadata)[manifest])" };
+
+  files:
+      "$(dest_dir)/$(files)"
+      copy_from => local_cp("$(source_dir)/$(files)");
+
+  reports:
+    cfengine::
+      "$(this.bundle): installing $(files) from $(source_dir) to $(dest_dir)";
+}
+
+bundle agent home(filename)
+{
+  classes:
+      "home_extracted" expression => regextract("(.+)/[^/]+",
+                                                $(filename),
+                                                "xhome");
+
+  vars:
+    home_extracted::
+      "home" string => "$(xhome[1])";
+}
+
+bundle common env
+{
+  vars:
+      "env" slist => { "LOGNAME", "PATH", "HOME" };
+      "$(env)" string => getenv("$(env)", "128");
+}

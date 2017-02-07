@@ -1,0 +1,33 @@
+{
+    manifest:
+    {
+        "main.cf": {description: "main file" },
+        "README.md": {documentation: true},
+        "params/demo.json": {description: "Demo of usage."}
+    },
+
+    metadata:
+    {
+        name: "Run::Once",
+	    description: "Run a given script at most once when a given context is true.",
+        version: 1.0,
+        license: "MIT",
+        tags: ["cfdc", "run", "once", "window", "enterprise_compatible", "enterprise_3_6" ],
+        authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::sketch_template": {}, cfengine: {version: "3.6.0"}, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] }
+    },
+
+    api:
+    {
+        run:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "context", description: "Context in which to run OR file with classes or hostnames in which to run", default: "any" },
+            { type: "list", name: "scripts", description: "List of scripts to run.  If an element is a file, use that file as TXT or CSV" },
+        ],
+    },
+
+    namespace: "cfdc_utilities_run_once",
+    interface: ["main.cf"]
+}

@@ -1,0 +1,111 @@
+body file control
+{
+      namespace => "cfdc_etc_hosts";
+}
+
+# Used for enforcing the complete contents of /etc/hosts
+# Warning: This is somewhat draconian, but it might be more desireable
+# than distributing a hand edited file since the definition of each element
+# can have a comment for knowledge management attached to it.
+#
+# This bundle should only be called once per host in a policy!
+# There are many different ways to use this bundle, you could call it per
+# host, or you could define a master /etc/hosts list just be careful and
+# choose one, not both.
+#
+# TODO
+# Would be nice to remove duplicate lines, as far as I know the only problem
+# duplicate lines causes is making my head hurt so its not high priority
+#
+# The config passed in is considered to be completely authoritative minus 3
+# exceptions
+# 1. Any line beginning with 127.0.0.1 will never be deleted by this bundle,
+#    only replaced if you provide an entry for it
+#
+# 2. Any line beginning with # comments will never be deleted by this bundle,
+#    only replaced if you stuff a # comment into the array index. But you
+#    shouldn't, do that unexpected things might happen.
+#
+# 3. Any line beginning with ::1 will never be deleted by this bundle, only
+#    replaced if you provide an entry for it
+
+bundle agent configure(runenv, metadata, original_hostfile, defined_only, hosts)
+{
+#@include "REPO/sketch_template/standard.inc"
+
+  vars:
+      "ip" slist   => getindices("$(hosts)"),
+      comment => "We need the list of IPs to look for in the hosts file";
+
+      "CFEnotice" string  => "# This file is managed by CFEngine, manual edits will be reverted",
+      comment => "It's nice to let people know why the file keep magically reverting on them";
+
+      "class_prefix" string => canonify($(hostfile));
+
+      "hostfile" string => "$(path_prefix)$(original_hostfile)";
+
+  classes:
+      "defined_only" expression => strcmp($(defined_only), "1");
+
+  files:
+    have_path_prefix::
+      "$(hostfile)"
+      create      =>  "true",
+      edit_line   =>  default:set_line_based("cfdc_etc_hosts:configure.hosts",
+                                             " ",
+                                             "\s+",
+                                             ".*",
+                                             "\s*#\s*"),
+      classes     =>  default:scoped_classes_generic("bundle", "converged"),
+      comment     =>  "Fix hosts entry to be as defined.";
+
+    defined_only::
+      # We only need to delete nonmanaged entries if we specify the
+      # defined_only flag
+      "$(hostfile)"
+      edit_line   => delete_nonmanaged("@(configure.ip)"),
+      comment     => "Delete lines that do not match our managed ip list";
+
+    have_path_prefix::
+      "$(hostfile)"
+      create      =>  "true",
+      edit_line   =>  default:prepend_if_no_line("$(CFEnotice)"),
+      comment     =>  "Notice that the file is managed by CFEngine";
+
+      # I have no idea what windows permissions should be for this file
+    !windows.not_test::
+      "$(hostfile)"
+      perms   => default:mog("644", "root", "root"),
+      comment => "Set proper permissions so everyone can read it";
+
+  reports:
+    dc_verbose.have_path_prefix.defined_only::
+      "$(dcbundle): only the defined hosts will be left in $(hostfile)";
+    dc_verbose.have_path_prefix.!defined_only::
+      "$(dcbundle): the defined hosts will be added to $(hostfile)";
+
+    dc_verbose::
+      "$(dcbundle): given hosts: $(ip)    $(config[$(ip)])";
+
+    converged_ok::
+      "$(hostfile)" bundle_return_value_index => "file";
+
+    !converged_ok::
+      "" bundle_return_value_index => "file";
+}
+
+bundle edit_line delete_nonmanaged(ips)
+{
+  vars:
+      "regex" string  => join ("|", ips),
+      comment => "Or the escaped ips together so we can delete all others.";
+
+  delete_lines:
+      # This is the negative look ahead, and what would need tweaked
+      # if you don't like the behavior.  Specifically it's identifying
+      # our list of ips followed by a space, as well as # comment or
+      # localhost and deleting everything else
+
+      "^(?!(\#|127\.0\.0\.1|\:\:1|$(regex))\s.*).*$"
+      comment => "Delete lines do not match our ips or are not comments";
+}

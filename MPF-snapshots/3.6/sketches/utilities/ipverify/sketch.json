@@ -1,0 +1,40 @@
+{
+
+    manifest:
+    {
+        "main.cf": { description: "main file" },
+        "README.md": { documentation: true },
+        "params/if_at_home_backup_pictures.json": { description: "Sample parameters to backup my pictures when I am at home" },
+        "params/example.json": { description: "Example" }
+    },
+
+    metadata:
+    {
+        name: "Utilities::ipverify",
+	    description: "Execute a bundle if reachable ip has known MAC address",
+        version: 1.1,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::dclib": {}, cfengine: { version: "3.4.0" }, os: [ "linux" ] }
+    },
+
+    api:
+    {
+        // the key is the name of the bundle!
+        maybe_usebundle:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "ip" },
+            { type: "list", name: "maclist" },
+            { type: "string", name: "usebundle" },
+            { type: "string", name: "arp_command", default: "/usr/sbin/arp" },
+            { type: "return", name: "match", },
+        ],
+    },
+
+    namespace: "cfdc_ipverify",
+    
+    interface: [ "main.cf" ]
+}

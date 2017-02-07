@@ -1,0 +1,146 @@
+body file control
+{
+      namespace => "cfdc_primitives_file_existence";
+}
+#body common control
+#{
+#      inputs => {
+#                          "$(sys.workdir)/inputs/lib/3.5/paths.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/common.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/commands.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/packages.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/files.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/services.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/processes.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/storage.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/databases.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/monitor.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/guest_environments.cf",
+#                          "$(sys.workdir)/inputs/lib/3.5/bundles.cf",
+#                 };
+#  bundlesequence => { "dev" };
+#}
+#
+#
+#bundle agent dev
+#{
+#
+#  vars:
+#    "fav_files1" slist => { "/tmp/fav_file1", "/tmp/fav_file2", "/immutable" };
+#    "fav_files2" slist => { "/tmp/fav_file1", "/tmp/fav_file2", "/proc/nickypoo" };
+#
+#
+#  #methods:
+#
+#    #"ensure_file_exists1" usebundle => present(@(fav_files1), "PASS", "FAIL"); # should pass (can create first 2, last file already present (but immutable)
+#    #"ensure_file_exists2" usebundle => present(@(fav_files2), "PASS", "FAIL"); # should fail (cant create file in proc) 
+#    #"ensure_file_absent1" usebundle => absent(@(fav_files1), "PASS", "FAIL"); # should fail cant delete immutable file
+#    #"ensure_file_absent2" usebundle => absent(@(fav_files2), "PASS", "FAIL"); # should pass (proc file doesnt exist, can remove others)
+#    #"ensure_file_check1" usebundle => cfdc_files_ensure:presence_check("runenv", "metadata",  @(fav_files1), "PASS", "FAIL");
+#}
+
+bundle agent present(runenv, metadata, list_of_files, success_class, fail_class)
+# @brief Ensure files are present
+# @param list_of_files List of files to ensure are present
+# @param success_class Class to define when all files exist
+# @param fail_class Class to define when any file fails to exist
+{
+#@include "REPO/sketch_template/standard.inc"
+
+  files:
+    not_test::
+      "$(list_of_files)"
+      create => "true",
+      classes => default:scoped_classes_generic("bundle", $(list_of_files));
+
+  methods:
+      "know exists"
+      inherit => "true",
+      usebundle => know_exists(@(list_of_files), $(success_class), $(fail_class));
+
+  reports:
+      "$(fail_class)"
+        bundle_return_value_index => "defined",
+        ifvarclass => "$(fail_class)";
+
+      "$(success_class)"
+        bundle_return_value_index => "defined",
+        ifvarclass => "$(success_class)";
+
+    dc_verbose::
+      "$(dcbundle): Looking for '$(list_of_files)'";
+
+      "$(dcbundle): Defined class $(success_class)"
+        ifvarclass => "$(success_class)";
+
+      "$(dcbundle): Defined class $(fail_class)"
+        ifvarclass => "$(fail_class)";
+}
+
+bundle agent absent(runenv, metadata, list_of_files, success_class, fail_class)
+# @brief Ensure files are absent
+# @param list_of_files List of files to ensure are absent
+# @param success_class Class to define when all files are absent
+# @param fail_class Class to define when any file fails to be absent
+{
+#@include "REPO/sketch_template/standard.inc"
+
+  files:
+    not_test::
+      "$(list_of_files)"
+      delete => default:tidy;
+
+  methods:
+    "know absent"
+      inherit => "true",
+      usebundle => know_exists(@(list_of_files), $(fail_class), $(success_class));
+
+  reports:
+      "$(fail_class)"
+        bundle_return_value_index => "defined",
+        ifvarclass => "$(fail_class)";
+
+      "$(success_class)"
+        bundle_return_value_index => "defined",
+        ifvarclass => "$(success_class)";
+
+    dc_verbose::
+      "$(dcbundle): Looking for '$(list_of_files)'";
+
+      "$(dcbundle): Defined class $(success_class)"
+        ifvarclass => "$(success_class)";
+
+      "$(dcbundle): Defined class $(fail_class)"
+        ifvarclass => "$(fail_class)";
+}
+
+bundle agent know_exists(list_of_files, success_class, fail_class)
+# @brief Check files are present
+# @param list_of_files List of files to check are present
+# @param success_class Global class to define when all files exist
+# @param fail_class Global class to define when any file fails to exist
+{
+  vars:
+      "canon[$(list_of_files)]" string => canonify($(list_of_files));
+      "canonified_file_names" slist => getvalues("canon");
+
+  classes:
+      "$(list_of_files)" expression => fileexists($(list_of_files));
+
+      "$(fail_class)"
+        not => fileexists($(list_of_files)),
+        scope => "namespace";
+
+      "$(fail_class)"
+        not => fileexists($(list_of_files)),
+        scope => "namespace";
+
+      "$(success_class)"
+        not => "$(fail_class)",
+      scope => "namespace";
+
+  reports:
+    dc_verbose::
+      "$(this.bundle): $(list_of_files) is absent" ifvarclass => "!$(canon[$(list_of_files)])";
+      "$(this.bundle): $(list_of_files) is present" ifvarclass => "$(canon[$(list_of_files)])";
+}

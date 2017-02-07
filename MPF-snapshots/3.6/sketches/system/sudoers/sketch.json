@@ -1,0 +1,41 @@
+{
+    "manifest":
+    {
+        "main.cf": { "description": "main file" },
+        "README.md": { "documentation": true },
+        "test.pl": { "test": true},
+        "params/test.json": {"description": "Testing parameter set"},
+        "params/demo.json": {"description": "Demo of package control."}
+    },
+
+    "metadata":
+    {
+        "name": "System::Sudoers",
+        "description": "Sets defaults and user permissions in the sudoers file",
+        "version": "2.0.2",
+        "license": "MIT",
+        "tags": [ "cfdc", "sudoers" ],
+        "authors": [ "Jon Henrik Bjornstad <jon.henrik.bjornstad@cfengine.com>", "Ben Heilman <bheilman@enova.com>" ],
+        "depends": { "CFEngine::dclib": {}, "CFEngine::dclib::3.5.0" : {}, "cfengine": { "version": "3.5.0" }, "os": [ "linux" ] }
+    },
+    "api" : {
+        "ensure" : [
+            { "name" : "runenv", "type" : "environment" },
+            { "name" : "metadata", "type" : "metadata" },
+
+            { "name" : "prefix", "type" : "string", "default" : "__PREFIX__" },
+
+            { "name" : "file_path", "type" : "string", "default" : "/etc/sudoers", "description" : "path to sudoers file to edit" },
+            { "name" : "visudo_path", "type" : "string", "default" : "/usr/sbin/visudo", "description": "path to visudo command" },
+            { "name" : "defaults", "type" : "list", "default" : [] },
+            { "name" : "user_alias", "type" : "list", "default" : [] },
+            { "name" : "host_alias", "type" : "list", "default" : [] },
+            { "name" : "cmnd_alias", "type" : "list", "default" : [] },
+            { "name" : "runas_alias", "type" : "list", "default" : [] },
+            { "name" : "user_specs", "type" : "list", "default" : [] },
+            { "name" : "drop_dirs", "type" : "list", "default" : [], "description" : "Drop directories" }
+        ]
+    },
+    "namespace": "cfdc_sudoers",
+    "interface": [ "main.cf" ]
+}

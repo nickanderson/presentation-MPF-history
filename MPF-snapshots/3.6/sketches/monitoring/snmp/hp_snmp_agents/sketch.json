@@ -1,0 +1,23 @@
+{
+    manifest:
+    {
+        "main.cf": { description: "main file", version: 1.1 },
+        "README.md": { documentation: true },
+        "example.cf": { description: "Example Policy" },
+        "changelog": { description: "changelog" }
+    },
+
+    metadata:
+    {
+        name: "Monitoring::Snmp::hp_snmp_agents",
+	    description: "Install and optionally configure hp-snmp-agents",
+        version: 1.1,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Nick Anderson <nick@cmdln.org>" ],
+        depends: { cfengine: { version: "3.2.1" }, os: [ "linux" ] }
+    },
+
+    
+    interface: [ "main.cf" ]
+}

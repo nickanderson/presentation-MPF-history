@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Masterfiles Policy Framework: A short history and future direction</title>
+<meta name="author" content="(Nick Anderson)"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="file:///home/nickanderson/src/reveal.js/css/reveal.css"/>
+
+<link rel="stylesheet" href="file:///home/nickanderson/src/reveal.js/css/theme/white.css" id="theme"/>
+
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'file:///home/nickanderson/src/reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+<meta name=description" content=Masterfiles Policy Framework: A short history">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide"><h1 class="title">Masterfiles Policy Framework: A short history and future direction</h1><h2 class="author">Nick Anderson</h2><p class="date">Created: 2017-02-07 Tue 18:34</p>
+</section>
+
+
+<section>
+<section id="slide-org8ac4eb4">
+<h2 id="org8ac4eb4">Fork me on Github!</h2>
+<p>
+<a href="https://github.com/nickanderson/presentation-MPF-history">https://github.com/nickanderson/presentation-MPF-history</a>
+</p>
+
+</section>
+</section>
+<section>
+<section id="slide-orgc86b87a">
+<h2 id="orgc86b87a">Introductions</h2>
+<div class="outline-text-2" id="text-orgc86b87a">
+</div></section>
+<section id="slide-orgfffdffe">
+<h3 id="orgfffdffe">My name is Nick.</h3>
+<ul>
+<li>Wife, 2 kids, and a dog</li>
+<li>Sysadmin/Infrastructure Engineer</li>
+<li>You can find me online
+<ul>
+<li><a href="mailto:nick@cmdln.org">nick@cmdln.org</a> | <a href="mailto:nick.anderson@cfengine.com">nick.anderson@cfengine.com</a></li>
+<li><a href="https://twitter.com/cmdln_">twitter: @cmdln_</a></li>
+<li><a href="http://www.cmdln.org/">cmdln.org</a></li>
+<li><a href="https://linkedin.com/in/hithisisnick">linkedin.com/in/hithisisnick</a></li>
+
+</ul></li>
+
+</ul>
+
+<p>
+<b>How about you?</b>
+</p>
+
+<aside class="notes">
+<p>
+I've worked in a wide variety of environments.
+</p>
+<ul>
+<li>E-commerce</li>
+<li>Large Enterprise (Motorola)</li>
+<li>High Performance Computing</li>
+<li>But always seem to work close with developers</li>
+
+</ul>
+
+</aside>
+
+</section>
+</section>
+<section>
+<section id="slide-orge44b300">
+<h2 id="orge44b300">What is the Masterfiles Policy Framework?</h2>
+<ul>
+<li><b>MPF</b> for short</li>
+<li>The <b>default</b> policy set</li>
+<li>A <b>starting place</b> to build upon</li>
+<li>Something that <b>grew organically</b> (<i>at least from my perspective</i>)</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org8b856e5">
+<h2 id="org8b856e5">MPF Timeline</h2>
+<div class="outline-text-2" id="text-org8b856e5">
+</div></section>
+<section id="slide-orgdb0fad6">
+<h3 id="orgdb0fad6">3.0 (2009)</h3>
+<ul>
+<li>Example policy shipped in <code>/usr/local/share/doc/cfengine/inputs</code>
+<ul>
+<li><code>promises.cf</code></li>
+<li><code>failsafe.cf</code></li>
+<li><code>update.cf</code></li>
+<li><code>library.cf</code></li>
+<li><code>site.cf</code></li>
+
+</ul></li>
+
+</ul>
+
+<aside class="notes">
+<ul>
+<li>Example <code>promises.cf</code>. All control bodies are defined within <code>promises.cf</code>.</li>
+<li><code>failsafe.cf</code> example policy to recover under bad conditions. Not standalone,
+leveraged <code>update.cf</code>.</li>
+<li><code>update.cf</code> example policy responsible for updating <code>inputs</code> from <code>masterfiles</code>.</li>
+<li><code>site.cf</code> example policy showing resolver config, concurrent cf2
+configuration, garbage collection, self component management, file integrity
+monitoring.</li>
+<li><code>library.cf</code> Copied from the stdlib in the COPBL.</li>
+
+</ul>
+
+</aside>
+</section>
+<section id="slide-orgb27f171">
+<h3 id="orgb27f171">3.1 (2010)</h3>
+<ul>
+<li>Example policy shipped in <code>/usr/local/share/doc/cfengine/inputs</code>
+<ul>
+<li><code>promises.cf</code></li>
+<li><code>failsafe.cf</code></li>
+<li><code>update.cf</code></li>
+<li><b><code>cfengine_stdlib.cf</code></b></li>
+<li><code>site.cf</code></li>
+
+</ul></li>
+
+</ul>
+
+<aside class="notes">
+<p>
+<code>library.cf</code> was renamed to <code>cfengine_stdlib.cf</code>
+</p>
+
+</aside>
+
+</section>
+<section id="slide-org67535aa">
+<h3 id="org67535aa">3.2 (2011)</h3>
+<ul>
+<li><b>Example policy shipped in <code>/usr/local/share/doc/cfengine/example_config</code></b>
+<ul>
+<li><code>promises.cf</code></li>
+<li><code>failsafe.cf</code></li>
+<li><code>update.cf</code></li>
+<li><code>cfengine_stdlib.cf</code></li>
+<li><code>site.cf</code></li>
+
+</ul></li>
+
+</ul>
+
+<aside class="notes">
+<p>
+Example policy moved to directory indicating it's an example.
+</p>
+
+</aside>
+</section>
+<section id="slide-orgb6e970f">
+<h3 id="orgb6e970f">3.3 (2012)</h3>
+<ul>
+<li>The first hint of a base policy set
+<ul>
+<li>Base policy shipped in <code>/var/cfengine/share/CoreBase</code></li>
+
+</ul></li>
+<li><b><code>promises.cf</code></b></li>
+<li><b><code>failsafe.cf</code></b></li>
+<li><code>cfengine_stdlib.cf</code></li>
+
+</ul>
+
+<aside class="notes">
+<ul>
+<li>Example site policy removed.</li>
+<li><code>promises.cf</code> is monolithic and standalone except for inclusion of stdlib.</li>
+<li><code>failsafe.cf</code> made standalone and contains policy update details.</li>
+
+</ul>
+
+</aside>
+</section>
+<section id="slide-org40943e5">
+<h3 id="org40943e5">3.4 (2012)</h3>
+<ul>
+<li>Base policy shipped in <code>/var/cfengine/share/CoreBase</code></li>
+<li>Structure arrives: 
+<ul>
+<li><code>controls/&lt;component&gt;.cf</code></li>
+<li><b><code>failsafe/failsafe.cf</code></b></li>
+<li><b><code>def.cf</code></b></li>
+<li><b><code>services/</code></b></li>
+<li><b><code>libraries/cfengine_stdlib.cf</code></b></li>
+<li><b><code>cf-sketch-runfile.cf</code></b></li>
+
+</ul></li>
+
+</ul>
+
+<aside class="notes">
+<ul>
+<li><code>promsies.cf</code> is no longer monolithic</li>
+<li><code>failsafe.cf</code> moves into sub-directory</li>
+<li>services directory begins suggesting where custom policies should live.</li>
+<li>stdlib moves into <code>libraries</code> sub-directory</li>
+<li>Hints of design center</li>
+
+</ul>
+
+</aside>
+</section>
+<section id="slide-org85e4520">
+<h3 id="org85e4520">3.5 (2013)</h3>
+<ul>
+<li>Base policy shipped in <code>/var/cfengine/share/CoreBase</code></li>
+<li><code>controls/&lt;component&gt;.cf</code></li>
+<li><code>failsafe/failsafe.cf</code></li>
+<li><code>def.cf</code></li>
+<li><code>services/</code></li>
+<li><code>libraries/cfengine_stdlib.cf</code></li>
+<li><code>cf-sketch-runfile.cf</code></li>
+
+</ul>
+
+</section>
+<section id="slide-orgfee8cd8">
+<h3 id="orgfee8cd8">3.6 (2014) &#x2026; oh my</h3>
+<ul>
+<li>Moved out of core, into its own repository</li>
+<li>Testing added</li>
+<li>Stdlib rendered in docs</li>
+<li>Build/install with make</li>
+<li>Base policy shipped in <code>/var/cfengine/share/CoreBase</code>
+<ul>
+<li><b>Used for both Enterprise and Community builds</b></li>
+
+</ul></li>
+<li><b><code>cfe_internal/</code></b></li>
+<li><b><code>inventory/</code></b></li>
+<li><b><code>lib/VER/</code></b></li>
+<li><b><code>services/autorun/</code></b></li>
+<li><b><code>update/</code></b></li>
+
+</ul>
+
+<aside class="notes">
+<ul>
+<li>This is really when the MPF was born.</li>
+<li>The same default policy is shipped in both Enterprise and Community packages</li>
+<li>standard library split into version specific sub-directories in order to
+deal with new syntax in mixed environments.</li>
+<li>Update split into multiple parts</li>
+<li>Inventory added (primarily for Enterprise)</li>
+<li><code>cfe_internal</code> added (internal self management policies).</li>
+
+</ul>
+
+</aside>
+
+</section>
+<section id="slide-org5e7213e">
+<h3 id="org5e7213e">3.7 - 3.9 (2015-2016)</h3>
+<ul>
+<li>Reduce enterprise policies evaluated on non Enterprise agents</li>
+<li>Improved inline policy documentation</li>
+<li>3.7.0 Augments file (<code>def.json</code>) introduced
+<ul>
+<li>3.7.4 augments parsing moved from policy to C</li>
+
+</ul></li>
+<li>3.8 - Version split lib and controls re-combined</li>
+<li>3.9 - No major structural changes</li>
+
+</ul>
+
+</section>
+<section id="slide-orge0e56bc">
+<h3 id="orge0e56bc">3.10 (2016)</h3>
+<ul>
+<li>MPF rendered in reference manual</li>
+<li>Formal naming convention for adjusting controls via augments
+<ul>
+<li><code>control_&lt;component&gt;_key</code></li>
+
+</ul></li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orgf3f97eb">
+<h2 id="orgf3f97eb">For the future?</h2>
+<ul>
+<li>More augmentation, less modification</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-org9c1cbd8">
+<h2 id="org9c1cbd8"><a id="ID-e0d84163-767e-4374-bfc8-f7055862ed16"></a>What would you like to see?</h2>
+<ul>
+<li>More augmentation, less modification</li>
+
+</ul>
+
+<div class="figure">
+<p><img src="data/e0/d84163-767e-4374-bfc8-f7055862ed16/2017-02-05_Selection_001_2017-02-05_05-55-50.png" alt="2017-02-05_Selection_001_2017-02-05_05-55-50.png" />
+</p>
+</div>
+
+<ul class="fragment fade-in">
+<li><a href="https://github.com/cfengine/masterfiles/pull/860/files">https://github.com/cfengine/masterfiles/pull/860/files</a></li>
+
+</ul>
+</section>
+</section>
+</div>
+</div>
+<p> Created by Nick Anderson. </p>
+<script src="file:///home/nickanderson/src/reveal.js/lib/js/head.min.js"></script>
+<script src="file:///home/nickanderson/src/reveal.js/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: 'c',
+rollingLinks: true,
+keyboard: true,
+overview: true,
+width: 1200,
+height: 800,
+margin: 0.10,
+minScale: 0.50,
+maxScale: 2.50,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'fade', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'file:///home/nickanderson/src/reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'file:///home/nickanderson/src/reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'file:///home/nickanderson/src/reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>

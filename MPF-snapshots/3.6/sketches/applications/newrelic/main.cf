@@ -1,0 +1,209 @@
+body file control
+{
+      namespace => "cfdc_newrelic";
+}
+
+bundle agent server(runenv, metadata, license_key, ensure, install)
+{
+#@include "REPO/sketch_template/standard.inc"
+  classes:
+      "ensure" expression => strcmp("1", $(ensure));
+      "stop" not => strcmp("1", $(ensure));
+
+      "install" expression => strcmp("1", $(install));
+      "uninstall" not => strcmp("1", $(install));
+
+  methods:
+      "NEWRELIC PREP $(runenv)"
+      usebundle => prep,
+      inherit => "true";
+
+    install::
+      "NEWRELIC INSTALL $(runenv)"
+      usebundle => install,
+      inherit => "true",
+      useresult => "return";
+
+    uninstall::
+      "NEWRELIC UNINSTALL $(runenv)"
+      usebundle => uninstall,
+      inherit => "true",
+      useresult => "return";
+
+    ensure::
+      "NEWRELIC CONFIGURE $(runenv)"
+      usebundle => conf($(runenv), $(metadata), "$(install_return[package_status])", $(license_key)),
+      inherit => "true",
+      useresult => "return";
+
+      "NEWRELIC PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => proc;
+
+      "NEWRELIC PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => proc_check,
+      useresult => "return";
+
+    stop::
+      "NEWRELIC STOP PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => stop;
+
+      "NEWRELIC STOP CHECK PROCESS $(runenv)"
+      inherit => "true",
+      usebundle => stop_check,
+      useresult => "return";
+
+  reports:
+      "$(return[process_status])" bundle_return_value_index => "running";
+      "$(return[package_status])" bundle_return_value_index => "installed";
+      "$(return[configure_status])" bundle_return_value_index => "configured";
+}
+
+bundle agent prep
+{
+  classes:
+    redhat::
+      "repo_not_installed" not => fileexists("/etc/yum.repos.d/newrelic.repo");
+
+  files:
+    debian||ubuntu::
+      "$(server.path_prefix)/etc/apt/sources.list.d/newrelic.list"
+      create => "true",
+      edit_defaults => default:no_backup,
+      classes => default:if_repaired("newrelic_apt_update"),
+      edit_line => default:insert_lines("deb http://apt.newrelic.com/debian/ newrelic non-free");
+
+  commands:
+    redhat.repo_not_installed::
+      "$(server.exec_prefix)$(default:paths.rpm) -Uvh http://yum.newrelic.com/pub/newrelic/el5/x86_64/newrelic-repo-5-3.noarch.rpm";
+    not_test.newrelic_apt_update::
+      "$(default:debian_knowledge.call_apt_get) update";
+}
+
+bundle agent install
+{
+  commands:
+    debian||ubuntu::
+      "$(server.exec_prefix)/usr/bin/apt-key adv --keyserver hkp://subkeys.pgp.net --recv-keys 548C16BF"
+      handle => "cfdc_newrelic_addkey",
+      contain => default:in_shell;
+
+  methods:
+    not_test::
+      "install" usebundle => default:package_latest("newrelic-sysmond"),
+      classes => default:if_ok("newrelic_installed");
+
+  reports:
+    dc_verbose.newrelic_installed::
+      "$(this.bundle): Installed New Relic successfully.";
+    dc_verbose.not_test.!newrelic_installed::
+      "$(this.bundle): Could not install New Relic successfully.";
+
+    newrelic_installed::
+      "1" bundle_return_value_index => "package_status";
+    not_test.!newrelic_installed::
+      "0" bundle_return_value_index => "package_status";
+    dc_test::
+      "$(this.bundle): Overriding bundle return status to success (1) in test mode";
+      "1" bundle_return_value_index => "package_status";
+}
+
+bundle agent uninstall
+{
+  methods:
+    not_test::
+      "install" usebundle => default:package_absent("newrelic-sysmond"),
+      classes => default:if_ok("newrelic_uninstalled");
+
+  reports:
+    dc_verbose.newrelic_uninstalled::
+      "$(this.bundle): Uninstalled New Relic successfully.";
+    dc_verbose.not_test.!newrelic_uninstalled::
+      "$(this.bundle): Could not uninstall New Relic successfully.";
+
+    newrelic_uninstalled::
+      "0" bundle_return_value_index => "package_status";
+    not_test.!newrelic_uninstalled::
+      "1" bundle_return_value_index => "package_status";
+    dc_test::
+      "$(this.bundle): Overriding bundle return status to success (0, since it uninstalls!) in test mode";
+      "0" bundle_return_value_index => "package_status";
+}
+
+bundle agent conf(runenv, metadata, pkg_status, license_key)
+{
+  classes:
+      "newrelic_installed" expression => strcmp("1", $(pkg_status));
+
+  commands:
+    newrelic_installed::
+      "$(server.exec_prefix)/usr/sbin/nrsysmond-config --set license_key=$(license_key)"
+      classes => default:if_ok("newrelic_configured");
+
+  reports:
+    dc_verbose.newrelic_configured::
+      "$(this.bundle): Configured New Relic successfully.";
+    dc_verbose.not_test.!newrelic_configured::
+      "$(this.bundle): Could not configure New Relic successfully.";
+
+    newrelic_configured::
+      "1" bundle_return_value_index => "configure_status";
+    not_test.!newrelic_configured::
+      "0" bundle_return_value_index => "configure_status";
+    dc_test::
+      "$(this.bundle): Overriding bundle return status to success (1) in test mode";
+      "1" bundle_return_value_index => "configure_status";
+}
+
+bundle agent proc
+{
+  processes:
+      "nrsysmond"
+      restart_class => "proc_start";
+
+  commands:
+    not_test.proc_start::
+      "$(server.exec_prefix)/etc/init.d/newrelic-sysmond start";
+}
+
+
+bundle agent proc_check
+{
+  processes:
+      "nrsysmond"
+      restart_class => "proc_exists";
+
+  reports:
+    dc_verbose.dc_test::
+      "$(this.bundle): Simulating ensuring New Relic successfully.";
+
+    proc_exists||dc_test::
+      "1" bundle_return_value_index => "process_status";
+    not_test.!proc_exists::
+      "0" bundle_return_value_index => "process_status";
+}
+
+bundle agent stop
+{
+  processes:
+      "nrsysmond"
+      process_stop => "$(server.exec_prefix)/etc/init.d/newrelic-sysmond stop";
+}
+
+bundle agent stop_check
+{
+  processes:
+      "nrsysmond"
+      restart_class => "proc_exists";
+
+  reports:
+    dc_verbose.dc_test::
+      "$(this.bundle): Simulating stopping New Relic successfully.";
+
+    !proc_exists||dc_test::
+      "1" bundle_return_value_index => "process_status";
+    not_test.proc_exists::
+      "0" bundle_return_value_index => "process_status";
+}

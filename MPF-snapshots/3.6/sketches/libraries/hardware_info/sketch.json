@@ -1,0 +1,24 @@
+{ 
+    manifest:
+    {
+        "main.cf": { description: "Main library", version: "1.2" },
+        "test.pl": { test:true },
+        "README.md": { documentation: true },
+        "example.cf": {description: "Example Policy"},
+        "sketch.json": {description: "metadata"}
+    },
+
+    metadata:
+    {
+        name: "Library::Hardware::Info",
+	    description: "Discover hardware information",
+        version: 1.2,
+        license: "MIT",
+        tags: [ "cfdc" ],
+        authors: [ "Nick Anderson <nick@cmdln.org>", "Trondham via cfengineers.org" ],
+        depends: { cfengine: { version: "3.2.1" } }
+    },
+
+    
+    interface: [ "main.cf" ]
+}

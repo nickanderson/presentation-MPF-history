@@ -1,0 +1,42 @@
+
+{
+    manifest:
+    {
+        "main.cf": { description: "main file", version: 2.1 },
+        "README.md": { documentation: true },
+        "params/example.json": { description: "Example parameters" }
+    },
+
+    metadata:
+    {
+        name: "System::config_resolver",
+	    description: "Configure DNS resolver",
+        version: 1.1,
+        license: "MIT",
+        tags: [ "cfdc", "enterprise_compatible", "enterprise_3_6" ],
+        authors: [ "Nick Anderson <nick@cmdln.org>", "Jean Remond <cfengine@remond.re>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::sketch_template": { }, cfengine: { version: "3.6.0" }, os: [{ "linux": "Linux" }]}
+    },
+
+    api:
+    {
+        resolver:
+        [
+            { type: "bundle_options", name: "Set up the DNS resolver", single_use: true },
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "string", name: "file", description: "Location of the resolver configuration file", validation: "PATH_ABSOLUTE_UNIX_OR_WINDOWS", default: "/etc/resolv.conf" },
+            { type: "list", name: "nameserver", description: "List of DNS servers", validation: "LIST_OF_STRING_NONEMPTY" },
+            { type: "list", name: "search", description: "List of DNS search domains (exclusive to 'domain')", validation: "LIST_OF_STRING_NONEMPTY" },
+            { type: "list", name: "domain", description: "Default DNS domains (exclusive to 'search')", validation: "LIST_OF_STRING_NONEMPTY" },
+            { type: "list", name: "options", description: "List of resolver options", validation: "LIST_OF_STRING_NONEMPTY" },
+            { type: "list", name: "sortlist", description: "DNS sortlist (defaults to the natural netmask)", validation: "LIST_OF_STRING_NONEMPTY" },
+            { type: "list", name: "extra", description: "Extra resolver options, platform-dependent", validation: "LIST_OF_STRING_NONEMPTY" },
+            { type: "return", name: "resolv_conf", },
+        ],
+    },
+
+    namespace: "cfdc_resolver",
+    
+    interface: [ "main.cf" ]
+}

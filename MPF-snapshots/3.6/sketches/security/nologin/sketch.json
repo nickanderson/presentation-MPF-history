@@ -1,0 +1,87 @@
+{
+    "api": {
+        "etc_nologin": [
+            { type: "bundle_options", name: "Refuse logins to the system through /etc/nologin", single_use: true },
+            {
+                "name": "runenv",
+                "type": "environment"
+            },
+            {
+                "name": "metadata",
+                "type": "metadata"
+            },
+            {
+                "choice": [
+                    "present",
+                    "absent"
+                ],
+                "default": "present",
+                "description": "The state of the /etc/nologin file (present|absent).",
+                "name": "state",
+                "type": "string"
+            },
+            {
+                "default": "Logins refused by policy.",
+                "description": "The content the /etc/nologin file should have.",
+                "name": "content",
+                "type": "string"
+            }
+        ],
+
+        "localuser_nologin": [
+            { type: "bundle_options", name: "Refuse login privileges to specific users", single_use: true },
+            {
+                "name": "runenv",
+                "type": "environment"
+            },
+            {
+                "name": "metadata",
+                "type": "metadata"
+            },
+            {
+                "name": "list_of_users",
+                "description": "List of users to be restricted from logging in.",
+                "type": "list",
+                "validation":"LIST_OF_USERNAMES_UNIX"
+            }
+        ]
+    },
+    "interface": [
+        "main.cf"
+    ],
+    "manifest": {
+        "README.md": {
+            "documentation": true
+        },
+        "main.cf": {
+            "description": "main file"
+        }
+    },
+    "metadata": {
+        "authors": [
+            "Nick Anderson <nick@cmdln.org>"
+        ],
+        "bundle_descriptions": {
+            "etc_nologin": "If the file /etc/nologin exists and is readable, login(1) will allow access only to root. Other users will be shown the contents of this file and their logins will be refused.",
+            "localuser_nologin": "The nologin command displays a message that an account is not available and exits non-zero. It is intended as a replacement shell field for accounts that have been disabled."
+        },
+        "depends": {
+            "CFEngine::sketch_template": {},
+            cfengine: { version: "3.6.0" }, "os": [ { "debian" : "Debian", "ubuntu" : "Ubuntu", "redhat" : "Red Hat", "centos" : "CentOS" } ]
+        },
+
+        "description": "This sketch provides facilities for restricting non root logins to a host.",
+        "license": "MIT",
+        "name": "Security::nologin",
+        "tags": [
+            "enterprise_compatible",
+            "security",
+            "sketchify_generated",
+            "nologin",
+            "enterprise_3_6",
+            "cfdc"
+        ],
+        "version": "1.0"
+    },
+    "namespace": "cfdc_security_nologin"
+}

@@ -1,0 +1,18 @@
+[
+{
+    "System::motd":
+    {
+        "motd": "\n$(sys.fqhost) - $(sys.flavor) \\/ $(sys.release)\nThis \"system\" is under CFEngine's control",
+        "motd_path": "/etc/motd-withcommand",
+        "prepend_command": "/bin/echo some output",
+    }
+},
+{
+    "System::motd":
+    {
+        "motd": "\n$(sys.fqhost) - $(sys.flavor) \\/ $(sys.release)\nThis \"system\" is under CFEngine's control",
+        "motd_path": "/etc/motd-nocommand",
+        "prepend_command": "",
+    }
+}
+]

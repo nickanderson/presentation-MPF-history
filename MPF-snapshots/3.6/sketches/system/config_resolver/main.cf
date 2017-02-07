@@ -1,0 +1,44 @@
+body file control
+{
+      namespace => "cfdc_resolver";
+}
+
+bundle agent resolver(runenv, metadata, file, nameserver, search, domain, options, sortlist, extra)
+{
+#@include "REPO/sketch_template/standard.inc"
+
+  vars:
+      "rfile" string => "$(path_prefix)$(file)";
+  files:
+      "$(rfile)"
+      handle        => "cfdc_config_resolver_file",
+      create        => "true",
+      edit_defaults => default:empty,
+      edit_line     => cfdc_resolver:resolver_edit($(dcbundle),
+                                                   @(nameserver),
+                                                   @(search),
+                                                   @(domain),
+                                                   @(options),
+                                                   @(sortlist),
+                                                   @(extra)),
+      classes       => default:if_ok("resolver_edit_successful"),
+      comment       => "Empty and edit resolver file $(rfile)";
+
+  reports:
+    resolver_edit_successful::
+      "$(rfile)" bundle_return_value_index => "resolv_conf";
+    !resolver_edit_successful::
+      "" bundle_return_value_index => "resolv_conf";
+}
+
+bundle edit_line resolver_edit(dcbundle, nameserver, search, domain, options, sortlist, extra)
+{
+  insert_lines:
+      "# maintained by CFEngine Design Center sketch $(dcbundle)";
+      "$(extra)";
+      "nameserver $(nameserver)";
+      "search $(search)";
+      "domain $(domain)";
+      "options $(options)";
+      "sortlist $(sortlist)";
+}

@@ -1,0 +1,38 @@
+{
+    manifest:
+    {
+        "main.cf": {description: "main file" },
+        "README.md": {documentation: true},
+        changelog: {description: "changelog"},
+        "params/example.json": {description: "Example parameters to report on a few hosts connectivity."}
+    },
+
+    metadata:
+    {
+        name: "Utilities::ping_report",
+	    description: "Report on pingability of hosts",
+        version: 1.2,
+        license: "MIT",
+        tags: ["cfdc"],
+        authors: ["Nick Anderson <nick@cmdln.org>", "Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: {"CFEngine::dclib": {}, cfengine: {version: "3.4.0"}, os: ["linux"] }
+    },
+
+    api:
+    {
+        // the key is the name of the bundle!
+        ping:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "metadata", },
+            { type: "list", name: "hosts" },
+            { type: "string", name: "count" },
+            { type: "return", name: "reached", },
+            { type: "return", name: "not_reached", },
+        ],
+    },
+
+    namespace: "cfdc_ping",
+    
+    interface: ["main.cf"]
+}

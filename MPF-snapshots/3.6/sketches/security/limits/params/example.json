@@ -1,0 +1,15 @@
+{
+    "Security::security_limits":
+    {
+        empty_first: false,
+        filename: "/etc/security/limits.conf",
+        domains: 
+        { 
+            "*":
+            { 
+                soft: { core: "1024" },
+                "-": { maxlogins: "100" }
+            }
+        }
+    }
+}

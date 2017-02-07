@@ -1,0 +1,4 @@
+#+Title: CFEngine Masterfiles Policy Framework: A short history and future direction
+
+- [[http://cfgmgmtcamp.eu/gent-2017][Config Management Camp Gent 2017]]
+

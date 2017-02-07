@@ -1,0 +1,7 @@
+{
+    "Security::nologin":
+    {
+        "content" : "",
+        "state" : "absent"
+    }
+}

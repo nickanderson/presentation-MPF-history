@@ -1,0 +1,184 @@
+#+Title: Masterfiles Policy Framework: A short history and future direction
+#+Author: Nick Anderson
+#+Email: nick@cmdln.org
+#+REVEAL_ROOT: file:///home/nickanderson/src/reveal.js/
+#+OPTIONS: reveal_center:t reveal_progress:t reveal_history:nil reveal_control:t
+#+OPTIONS: reveal_rolling_links:t reveal_keyboard:t reveal_overview:t num:nil
+#+OPTIONS: reveal_width:1200 reveal_height:800
+# The TOC is a bit much for a slide show IMHO
+#+OPTIONS: toc:nil
+#+REVEAL_MARGIN: 0.1
+#+REVEAL_MIN_SCALE: 0.5
+#+REVEAL_MAX_SCALE: 2.5
+# Available Transitions: default|cube|page|concave|zoom|linear|fade|none.
+#+REVEAL_TRANS: fade
+#+REVEAL_THEME: white 
+# ?? Guess this flattens up to x levels deep
+#+REVEAL_HLEVEL: 1
+#+REVEAL_HEAD_PREAMBLE: <meta name=description" content=Masterfiles Policy Framework: A short history">
+#+REVEAL_POSTAMBLE: <p> Created by Nick Anderson. </p>
+#+REVEAL_PLUGINS: (markdown notes)
+
+
+* Fork me on Github!
+
+https://github.com/nickanderson/presentation-MPF-history
+
+* Introductions
+
+** My name is Nick.
+- Wife, 2 kids, and a dog
+- Sysadmin/Infrastructure Engineer
+- You can find me online
+  - [[mailto:nick@cmdln.org][nick@cmdln.org]] | [[mailto:nick.anderson@cfengine.com][nick.anderson@cfengine.com]]
+  - [[https://twitter.com/cmdln_][twitter: @cmdln_]]
+  - [[http://www.cmdln.org][cmdln.org]]
+  - [[https://linkedin.com/in/hithisisnick][linkedin.com/in/hithisisnick]]
+
+*How about you?*
+
+#+BEGIN_NOTES
+I've worked in a wide variety of environments.
+- E-commerce
+- Large Enterprise (Motorola)
+- High Performance Computing
+- But always seem to work close with developers
+#+END_NOTES
+
+* What is the Masterfiles Policy Framework?
+- *MPF* for short
+- The *default* policy set
+- A *starting place* to build upon
+- Something that *grew organically* (/at least from my perspective/)
+
+* MPF Timeline
+** 3.0 (2009)
+- Example policy shipped in =/usr/local/share/doc/cfengine/inputs=
+  - =promises.cf=
+  - =failsafe.cf=
+  - =update.cf=
+  - =library.cf=
+  - =site.cf=
+
+#+BEGIN_NOTES
+  - Example =promises.cf=. All control bodies are defined within =promises.cf=.
+  - =failsafe.cf= example policy to recover under bad conditions. Not standalone,
+    leveraged =update.cf=.
+  - =update.cf= example policy responsible for updating =inputs= from =masterfiles=.
+  - =site.cf= example policy showing resolver config, concurrent cf2
+    configuration, garbage collection, self component management, file integrity
+    monitoring.
+  - =library.cf= Copied from the stdlib in the COPBL.
+#+END_NOTES
+** 3.1 (2010)
+- Example policy shipped in =/usr/local/share/doc/cfengine/inputs=
+  - =promises.cf=
+  - =failsafe.cf=
+  - =update.cf=
+  - *=cfengine_stdlib.cf=*
+  - =site.cf=
+
+#+BEGIN_NOTES
+  =library.cf= was renamed to =cfengine_stdlib.cf=
+#+END_NOTES
+
+** 3.2 (2011)
+- *Example policy shipped in =/usr/local/share/doc/cfengine/example_config=*
+  - =promises.cf=
+  - =failsafe.cf=
+  - =update.cf=
+  - =cfengine_stdlib.cf=
+  - =site.cf=
+
+#+BEGIN_NOTES
+  Example policy moved to directory indicating it's an example.
+#+END_NOTES
+** 3.3 (2012)
+- The first hint of a base policy set
+  - Base policy shipped in =/var/cfengine/share/CoreBase=
+- *=promises.cf=*
+- *=failsafe.cf=*
+- =cfengine_stdlib.cf=
+
+#+BEGIN_NOTES
+  - Example site policy removed.
+  - =promises.cf= is monolithic and standalone except for inclusion of stdlib.
+  - =failsafe.cf= made standalone and contains policy update details.
+#+END_NOTES
+** 3.4 (2012)
+- Base policy shipped in =/var/cfengine/share/CoreBase=
+- Structure arrives: 
+  - =controls/<component>.cf=
+  - *=failsafe/failsafe.cf=*
+  - *=def.cf=*
+  - *=services/=*
+  - *=libraries/cfengine_stdlib.cf=*
+  - *=cf-sketch-runfile.cf=*
+
+#+BEGIN_NOTES
+  - =promsies.cf= is no longer monolithic
+  - =failsafe.cf= moves into sub-directory
+  - services directory begins suggesting where custom policies should live.
+  - stdlib moves into =libraries= sub-directory
+  - Hints of design center
+#+END_NOTES
+** 3.5 (2013)
+- Base policy shipped in =/var/cfengine/share/CoreBase=
+- =controls/<component>.cf=
+- =failsafe/failsafe.cf=
+- =def.cf=
+- =services/=
+- =libraries/cfengine_stdlib.cf=
+- =cf-sketch-runfile.cf=
+
+** 3.6 (2014) ... oh my
+- Moved out of core, into its own repository
+- Testing added
+- Stdlib rendered in docs
+- Build/install with make
+- Base policy shipped in =/var/cfengine/share/CoreBase=
+  - *Used for both Enterprise and Community builds*
+- *=cfe_internal/=*
+- *=inventory/=*
+- *=lib/VER/=*
+- *=services/autorun/=*
+- *=update/=*
+
+#+BEGIN_NOTES
+  - This is really when the MPF was born.
+  - The same default policy is shipped in both Enterprise and Community packages
+  - standard library split into version specific sub-directories in order to
+    deal with new syntax in mixed environments.
+  - Update split into multiple parts
+  - Inventory added (primarily for Enterprise)
+  - =cfe_internal= added (internal self management policies).
+#+END_NOTES
+
+** 3.7 - 3.9 (2015-2016)
+- Reduce enterprise policies evaluated on non Enterprise agents
+- Improved inline policy documentation
+- 3.7.0 Augments file (=def.json=) introduced
+  - 3.7.4 augments parsing moved from policy to C
+- 3.8 - Version split lib and controls re-combined
+- 3.9 - No major structural changes 
+
+** 3.10 (2016)
+- MPF rendered in reference manual
+- Formal naming convention for adjusting controls via augments
+  - =control_<component>_key=
+
+* For the future?
+- More augmentation, less modification
+
+* What would you like to see?
+:PROPERTIES:
+:ID:       e0d84163-767e-4374-bfc8-f7055862ed16
+:Attachments: 2017-02-05_Selection_001_2017-02-05_05-55-50.png
+:END:
+
+- More augmentation, less modification
+#+DOWNLOADED: file:///home/nickanderson/Pictures/Screenshots/2017-02-05_Selection_001.png @ 2017-02-05 05:55:50
+[[file:data/e0/d84163-767e-4374-bfc8-f7055862ed16/2017-02-05_Selection_001_2017-02-05_05-55-50.png]]
+
+#+ATTR_REVEAL: :frag fade-in
+- https://github.com/cfengine/masterfiles/pull/860/files

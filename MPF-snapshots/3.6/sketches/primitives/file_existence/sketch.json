@@ -1,0 +1,95 @@
+{
+    "api": {
+        "present": [
+            {
+                "name": "runenv",
+                "type": "environment"
+            },
+            {
+                "name": "metadata",
+                "type": "metadata"
+            },
+            {
+                "name": "list_of_files",
+                "description": "List of files to ensure are absent.",
+                "type": "list",
+                "validation":"LIST_OF_PATH_ABSOLUTE_UNIX_OR_WINDOWS"
+            },
+
+            {
+                "name": "success_class",
+                "description": "Class to define if all files are present.",
+                "type": "string",
+                "validation": "CLASSNAME"
+            },
+
+            {
+                "name": "fail_class",
+                "description": "Class to define if any file is absent and can not be created.",
+                "type": "string",
+                "validation": "CLASSNAME"
+            }
+        ],
+
+        "absent": [
+            {
+                "name": "runenv",
+                "type": "environment"
+            },
+            {
+                "name": "metadata",
+                "type": "metadata"
+            },
+            {
+                "name": "list_of_files",
+                "description": "List of files to ensure are absent.",
+                "type": "list",
+                "validation":"LIST_OF_PATH_ABSOLUTE_UNIX_OR_WINDOWS"
+            },
+
+            {
+                "name": "success_class",
+                "description": "Class to define if all files are absent.",
+                "type": "string",
+                "validation": "CLASSNAME"
+            },
+
+            {
+                "name": "fail_class",
+                "description": "Class to define if any file is present and can not be deleted.",
+                "type": "string",
+                "validation": "CLASSNAME"
+            }
+        ],
+    },
+    "interface": [
+        "main.cf"
+    ],
+    "manifest": {
+        "README.md": {
+            "documentation": true
+        },
+        "main.cf": {
+            "description": "main file"
+        }
+    },
+    "metadata": {
+        "authors": [
+            "Nick Anderson <nick@cmdln.org>"
+        ],
+        "bundle_descriptions": {
+            "present": "Ensure all given files are present.",
+            "absent": "Ensure all given files are absent.",
+            "know_exists": "Check if all given files are present."
+        },
+
+        depends: { "CFEngine::sketch_template": {}, cfengine: {version: "3.6.0"}, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] },
+
+        "description": "This sketch provides facilities ensuring a list of files exists or not. It can also be used strictly for validating the presence of a file which may be useful for host classification.",
+        "license": "MIT",
+        "name": "Primitives::files_existence",
+        tags: ["cfdc", "primitive", "files", "present", "absent", "existence", "enterprise_compatible", "enterprise_3_6" ],
+        "version": "1.0"
+    },
+    "namespace": "cfdc_primitives_file_existence"
+}

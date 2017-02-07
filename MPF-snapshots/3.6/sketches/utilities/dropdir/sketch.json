@@ -1,0 +1,33 @@
+{
+    manifest:
+    {
+        "main.cf": {description: "main file" },
+        "README.md": {documentation: true},
+        "params/demo.json": {description: "Demo of usage."}
+    },
+
+    metadata:
+    {
+        name: "Run::Dropdir",
+	    description: "Run the scripts in a directory for a limited time when a given context is true and report their output in the 'dropdir' bundle.  Clean out outdated scripts.  Requires three or more letters in the script name",
+        version: 1.0,
+        license: "MIT",
+        tags: ["cfdc", "run", "dropdir", "window", "enterprise_compatible", "enterprise_3_6" ],
+        authors: ["Ted Zlatanov <tzz@lifelogs.com>" ],
+        depends: { "CFEngine::sketch_template": {}, cfengine: {version: "3.6.0"}, os:[{"linux":"Linux","any":"Any OS","windows":"Windows"}] }
+    },
+
+    api:
+    {
+        dropdir_run:
+        [
+            { type: "environment", name: "runenv", },
+            { type: "metadata", name: "mymetadata", },
+            { type: "string", name: "context", description: "Context in which to run", default: "any" },
+            { type: "string", name: "directory", description: "Drop directory (put scripts to be run here)" },
+            { type: "string", name: "days", description: "Number of days to keep the scripts", validation: "DIGITS", default: 7 },
+        ],
+    },
+
+    interface: ["main.cf"]
+}
